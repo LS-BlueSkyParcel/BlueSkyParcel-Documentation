@@ -53,7 +53,7 @@ export default function Header() {
         <div className="flex items-center py-2">
           <Link href="/">
             <Image
-              src="./mmcore_slogan.png"
+              src="./logo-must.svg"
               alt="Company Logo"
               width={150}
               height={60}

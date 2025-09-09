@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   title: 'Blueskyparcel',
   description: 'Blueskyparcel documentation ',
   icons: {
-    icon: "/favicon.ico",
+    icon: "/ikoon-taustaga.svg",
   },
 }
 
