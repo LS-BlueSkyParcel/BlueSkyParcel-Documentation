@@ -35,7 +35,7 @@ const buildApiEndpoints = (t: (k: string) => string): ApiEndpoint[] => [
   {
     method: "GET",
     endpoint: "/auth",
-    description: t("apiDocs.endpoints.auth.description"),
+    description: "Authenticate and validate your API credentials",
     parameters: ["AUTH_USER", "AUTH_PW"],
     response: "authentication_status, permissions, rate_limits",
     example: `curl --location 'https://api.mmcore.tech/auth' \\
@@ -45,27 +45,27 @@ const buildApiEndpoints = (t: (k: string) => string): ApiEndpoint[] => [
   {
     method: "GET",
     endpoint: "/get_tracking_information/APIKEY/tracking_code",
-    description: t("apiDocs.endpoints.tracking.description"),
+    description: "Get detailed tracking information for shipments with comprehensive query parameters",
     parameters: ["APIKEY", "tracking_code", "flight_tracking_setting", "lang", "type", "tracking_details"],
     queryParams: [
-      { name: "lang", values: "en, nl", default: "en", description: t("apiDocs.endpoints.tracking.query.lang") },
+      { name: "lang", values: "en, nl", default: "en", description: "Sets the language for the API response, currently supported are: NL and EN" },
       {
         name: "flight_tracking_setting",
         values: "only, include, exclude",
         default: "exclude",
-        description: t("apiDocs.endpoints.tracking.query.flightTrackingSetting"),
+        description: "Defines how flight/waybill tracking should be handled",
       },
       {
         name: "type",
         values: "barcode, waybill, box",
         default: "barcode",
-        description: t("apiDocs.endpoints.tracking.query.type"),
+        description: "Specifies the type of tracking being used",
       },
       {
         name: "tracking_details",
         values: "minimal, lastStatus, full",
         default: "full",
-        description: t("apiDocs.endpoints.tracking.query.trackingDetails"),
+        description: "Defines the level of detail in the tracking response",
       },
     ],
     response: "tracking_events, current_status, estimated_delivery, carrier_info, flight_tracking",
@@ -85,14 +85,14 @@ curl --location --request GET 'https://api.mmcore.tech/get_tracking_information/
   {
     method: "POST",
     endpoint: "/action/APIKEY/101/",
-    description: t("apiDocs.endpoints.action.description"),
+    description: "Request a carrier label for a specific country with various output options",
     parameters: ["created_by", "carrier", "carrier_option", "weight", "dimensions", "recipient_info", "sender_info"],
     queryParams: [
-      { name: "pl", values: "Y, N", default: "N", description: t("apiDocs.endpoints.action.query.pl") },
-      { name: "dhlzpl", values: "Y, N", default: "N", description: t("apiDocs.endpoints.action.query.dhlzpl") },
-      { name: "zpl", values: "Y, N", default: "N", description: t("apiDocs.endpoints.action.query.zpl") },
-      { name: "o", values: "JSON", default: "", description: t("apiDocs.endpoints.action.query.o") },
-      { name: "dl", values: "Y, N", default: "N", description: t("apiDocs.endpoints.action.query.dl") },
+      { name: "pl", values: "Y, N", default: "N", description: "Y = Show PDF label, N = get JSON result" },
+      { name: "dhlzpl", values: "Y, N", default: "N", description: "Y = get DHL JSON Label, N = get URL to get PDF" },
+      { name: "zpl", values: "Y, N", default: "N", description: "Y = get ZPL label if carrier supports it" },
+      { name: "o", values: "JSON", default: "", description: "Output will be in JSON format" },
+      { name: "dl", values: "Y, N", default: "N", description: "Y = the label will be called within this call" },
     ],
     response: "label_url, tracking_number, shipment_id, processing_status",
     example: `curl --location 'https://api.mmcore.tech/action/APIKEY/101/?pl=Y&zpl=N&o=JSON' \\
@@ -135,25 +135,88 @@ curl --location --request GET 'https://api.mmcore.tech/get_tracking_information/
   {
     method: "POST",
     endpoint: "/post_manifest_data/APIKEY",
-    description: t("apiDocs.endpoints.postManifest.description"),
+    description: "Upload manifest data to the database for shipment processing (supports bulk uploads)",
     parameters: ["waybill", "packageId", "parcelId", "recipient_info", "sender_info", "item_details", "ls (optional)"],
     queryParams: [
       {
         name: "ls",
         values: "Y, N",
         default: "N",
-        description: t("apiDocs.endpoints.postManifest.query.ls"),
+        description: "Y = Lock manifest data (if there are no errors), N = Don't lock manifest data. ONLY APPLICABLE FOR AIRWAYBILLS",
       },
     ],
     response: "upload_status, validation_errors, manifest_id",
     example: `curl --location 'https://api.mmcore.tech/post_manifest_data/APIKEY?ls=Y' \\
 --header 'Content-Type: application/json' \\
---data '[ ... ]'`,
+--data '[
+    {
+        "transportType": "CMR", // Optional, defaults to "AWB" if not provided
+        "shipmentNumber": "999-12345678", //required to be set and unique per shipment
+        "packageId": "1", //required to be set and unique per package within a shipment
+        "parcelId": "123456", //required to be set and unique per parcel within a package
+        "name": "John Doe", //recipient name (required)
+        "address": "Test Street", //recipient street address (required)
+        "address2": "", //recipient additional address info (optional)
+        "zipcode": "Test Zipcode", //recipient postal code (required)
+        "city": "Test City",  //recipient city (required)
+        "country": "ISO 2 Country", //recipient country in ISO 2 format (required)
+        "phone": "0612345678", //recipient phone number (required)
+        "email": "john.doe@mail.com", //recipient email address (required)
+        "sellerName": "seller", //sender name (required)
+        "sellerAddress": "seller address", //sender street address (required) 
+        "sellerZipcode": "seller zipcode",  //sender postal code (required)
+        "sellerCity": "seller city", //sender city (required)
+        "sellerCountry": "seller ISO 2 country",  //sender country in ISO 2 format (required)
+        "sku": "sku", //item SKU or identifier (required)
+        "content": "Some content", //item description (required)
+        "hsCode": "123456", //item HS code for customs (required for transportType AWB and CMR outside EU)
+        "quantity": "1", //item quantity (required)
+        "itemPrice": "10.00", //item price (required)
+        "parcelWeight": "0.20", //parcel weight in kg (required)
+        "itemWeight": "0.22", //item weight in kg (required)
+        "currency": "USD", //currency code in ISO 3 format (required)
+        "parcelPrice": "10.20", //total parcel price (required)
+        "taxType": "IOSS", //tax type, e.g. IOSS, OSS, NON_EU (required for transportType AWB and CMR outside EU)
+        "taxIdent": "taxIdent", //tax identification number (required for transportType AWB and CMR outside EU)
+        "grossWeight": "100" //gross weight in kilograms (required)
+    },
+        {
+        "transportType": "CMR",
+        "shipmentNumber": "999-12345678",
+        "packageId": "2",
+        "parcelId": "654321",
+        "name": "John Doe",
+        "address": "Test Street",
+        "address2": "",
+        "zipcode": "Test Zipcode",
+        "city": "Test City",
+        "country": "ISO 2 Country",
+        "phone": "0612345678",
+        "email": "john.doe@mail.com",
+        "sellerName": "seller",
+        "sellerAddress": "seller address",
+        "sellerZipcode": "seller zipcode",
+        "sellerCity": "seller city",
+        "sellerCountry": "seller ISO 2 country",
+        "sku": "sku2",
+        "content": "Some content",
+        "hsCode": "123456",
+        "quantity": "1",
+        "itemPrice": "10.00",
+        "parcelWeight": "0.20",
+        "itemWeight": "0.22",
+        "currency": "USD",
+        "parcelPrice": "10.20",
+        "taxType": "IOSS",
+        "taxIdent": "taxIdent",
+        "grossWeight": "100"
+    }
+]'`,
   },
   {
     method: "POST",
     endpoint: "/lock_shipment/APIKEY",
-    description: t("apiDocs.endpoints.lockShipment.description"),
+    description: "Lock a shipment to prevent further changes (Airwaybills only). This notifies that the shipment is complete.",
     parameters: ["waybill", "APIKEY"],
     response: "lock_status, confirmation_message",
     example: `curl --location 'https://api.mmcore.tech/lock_shipment/APIKEY' \\
@@ -531,15 +594,7 @@ curl --location 'https://api.mmcore.tech/post_manifest_data/YOUR_API_KEY' \\
                     {t("apiDocs.postmanCollection")}
                   </Link>
                 </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  asChild
-                  className="bg-transparent hover:text-white"
-                  style={{ borderColor: "#1f94d3", color: "#1f94d3" }}
-                >
-                  <Link href="mailto:info@blueskyparcel.com">{t("apiDocs.getSupport")}</Link>
-                </Button>
+
                 <Button
                   variant="outline"
                   size="lg"
