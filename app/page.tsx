@@ -136,7 +136,7 @@ curl --location --request GET 'https://api.mmcore.tech/get_tracking_information/
     method: "POST",
     endpoint: "/post_manifest_data/APIKEY",
     description: "Upload manifest data to the database for shipment processing (supports bulk uploads)",
-    parameters: ["waybill", "packageId", "parcelId", "recipient_info", "sender_info", "item_details", "ls (optional)"],
+    parameters: ["shipmentNumber", "packageId", "parcelId", "recipient_info", "sender_info", "item_details"],
     queryParams: [
       {
         name: "ls",
@@ -150,7 +150,7 @@ curl --location --request GET 'https://api.mmcore.tech/get_tracking_information/
 --header 'Content-Type: application/json' \\
 --data '[
     {
-        "transportType": "CMR", // Optional, defaults to "AWB" if not provided
+        "transportType": "CMR", // Optional, defaults to "AWB" if not provided, possible values: "AWB", "CMR" or B/L
         "shipmentNumber": "999-12345678", //required to be set and unique per shipment
         "packageId": "1", //required to be set and unique per package within a shipment
         "parcelId": "123456", //required to be set and unique per parcel within a package
