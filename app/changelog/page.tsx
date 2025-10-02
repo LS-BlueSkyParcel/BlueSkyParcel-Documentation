@@ -194,7 +194,7 @@ export default function ChangelogPage() {
                   className="mt-4 bg-transparent"
                   style={{ borderColor: "#1f94d3", color: "#1f94d3" }}
                 >
-                  <Link href="/api-docs">
+                  <Link href="/">
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     {t("apiDocs.backToDocumentation")}
                   </Link>
